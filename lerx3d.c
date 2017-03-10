@@ -120,58 +120,68 @@ int inserirPonto(tListaPonto *listaP, float xp, float yp, float zp){
 }
 /**Fim da funções para manipular as listas */
 
+
+/**Função para ler as faces e colocar na lista de faces*/
+void lerFace(char *str){
+    int i, qtdeentrou = 0, ent = 1, cont_aspas = 0;
+    if(strstr(str, "coordIndex=\"")!=NULL){
+        //printf("entrou %d vezes\n", ++j);
+        for(i = 0; i<strlen(str); i++){
+            if(str[i]>='0' && str[i]<='9'){
+                if(qtdeentrou == 0){
+                    printf("#%d face: %c\n", ent, str[i]);
+                    ent++;//serve de nada, só para numerar as faces
+                    qtdeentrou++;
+                }else if(qtdeentrou == 1){
+                    printf("#%d face: %c\n", ent, str[i]);
+                    ent++;//serve de nada, só para numerar as faces
+                    qtdeentrou++;
+                }else if(qtdeentrou == 2){
+                    printf("#%d face: %c\n", ent, str[i]);
+                    ent++;//serve de nada, só para numerar as faces
+                    qtdeentrou++;
+                }
+
+                if(qtdeentrou==3){
+                    qtdeentrou = 0;
+                    ent = 1;//serve de nada, só para numerar as faces
+                }
+            }
+            /**esse if é para verificar se foi lido as 3 faces e se foi, pular dois índices para não salvar o -1*/
+            if(str[i] == '-'){
+                i = i+2;
+            }
+            /**if para verificar se já foi encontrado as duas aspas */
+            if(str[i] == '\"'){
+                cont_aspas++;
+                if(cont_aspas == 2){
+                    cont_aspas = 0;
+                    break;
+                }
+            }
+
+        }//fim do for que encontra as faces
+    }//fim do if que procura as até achar o coordindex
+}//fim da função que pega os pontos
+
+/**Função para ler os pontos e colocar na lista de pontos */
+void lerPonto(char *str){
+    int i, qtdeentrou = 0, ent = 1, cont_aspas = 0;
+    if(strstr(str, "point=\"")){
+        for(i=0; i<strlen(str); i++){
+            if(str[i]>='0' && str[i]<='9'){
+
+            }
+        }
+    }//fim do if que compara a string
+}//fim da função de ler os pontos
+
 void lerArquivo(FILE *arquivo/*, tListaPonto *listaPonto, tListaFace *listaFace*/){
     char linha[400];
-    int i;
-    int cont_aspas = 0;//verificar se foi passado pelas duas aspas
-    int qtdeentrou = 0, ent = 1;//serve de nada, só para numerar as faces
-
-    //arquivo = fopen("quad.x3d", "r");
     while(!feof(arquivo)){
         fgets(linha, 400, arquivo);
-        //printf("%s", linha);
-        if(strstr(linha, "coordIndex=\"")!=NULL){
-            printf("entrou\n");
-            for(i = 0; i<strlen(linha); i++){
-                if(linha[i]>='0' && linha[i]<='9'){
-                    if(qtdeentrou == 0){
-                        printf("#%d face: %c\n", ent, linha[i]);
-                        ent++;//serve de nada, só para numerar as faces
-                        qtdeentrou++;
-                    }else if(qtdeentrou == 1){
-                        printf("#%d face: %c\n", ent, linha[i]);
-                        ent++;//serve de nada, só para numerar as faces
-                        qtdeentrou++;
-                    }else if(qtdeentrou == 2){
-                        printf("#%d face: %c\n", ent, linha[i]);
-                        ent++;//serve de nada, só para numerar as faces
-                        qtdeentrou++;
-                    }
-
-                    if(qtdeentrou==3){
-                        qtdeentrou = 0;
-                        ent = 1;//serve de nada, só para numerar as faces
-                    }
-                }
-                /**esse if é para verificar se foi lido as 3 faces e se foi, pular dois índices para não salvar o -1*/
-                if(linha[i] == '-'){
-                    //printf("entrou if\n");
-                    i = i+2;
-                }
-                /**if para verificar se já foi encontrado as duas aspas */
-                if(linha[i] == '\"'){
-                    cont_aspas++;
-                    if(cont_aspas == 2){
-                        //printf("encontrou as %d aspas\n", cont_aspas);
-                        cont_aspas = 0;
-                        break;
-                    }
-                }
-
-            }//fim do for que encontra as faces
-        }//fim do if que procura as até achar o coordindex
+        lerFace(linha);
     }//fim do arquivo
-    //fclose(arquivo);
 }//fim da função ler arquivo
 
 int main(){
