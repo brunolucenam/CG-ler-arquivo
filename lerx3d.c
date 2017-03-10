@@ -71,7 +71,7 @@ int inserirFace(tListaFace *listaF, int f1, int f2, int f3){
     tFace *noFace, *fimFace;
     fimFace = listaF->inicioFace;//esse ponteiro vai percorrer toda lista para inserir no fim
     //int cont = 1;
-    noFace = malloc(tFace);
+    noFace = malloc(sizeof(tFace));
     if(noFace == NULL){//if que verifica se um novo nó foi alocado
         return 0;
     }
@@ -80,14 +80,14 @@ int inserirFace(tListaFace *listaF, int f1, int f2, int f3){
     noFace->pt[2] = f3;
     if(listaFaceVazia(*listaF)){
         noFace->proxFace = NULL;
-        listaF->cabeca = noFace;
+        listaF->inicioFace = noFace;
         listaF->tamanhoFace++;
     }else{
         while(fimFace->proxFace!=NULL){//percorre até o último índice da lista
             fimFace = fimFace->proxFace;
         }
         noFace->proxFace = NULL;
-        fimFace->prox = noFace;
+        fimFace->proxFace = noFace;
         listaF->tamanhoFace++;
     }
     return 1;
@@ -96,8 +96,8 @@ int inserirFace(tListaFace *listaF, int f1, int f2, int f3){
 //Função para inserir um elemento na lista do ponto, sempre no final. Função vai ser int para saber se foi inserido corretamente
 int inserirPonto(tListaPonto *listaP, float xp, float yp, float zp){
     tPonto *noPonto, *fimPonto;
-    fimPonto = lista->cabeca;
-    noPonto = malloc(tListaPonto);
+    fimPonto = listaP->inicioPonto;
+    noPonto = malloc(sizeof(tPonto));
     if(noPonto == NULL){
         return 0;
     }
@@ -110,7 +110,7 @@ int inserirPonto(tListaPonto *listaP, float xp, float yp, float zp){
         listaP->tamanhoPonto++;
     }else{
         while(fimPonto->proxPonto!=NULL){
-            fim = fimPonto->proxPonto;
+            fimPonto = fimPonto->proxPonto;
         }
         noPonto->proxPonto = NULL;
         fimPonto->proxPonto = noPonto;
