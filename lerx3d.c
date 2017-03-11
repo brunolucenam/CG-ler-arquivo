@@ -119,43 +119,64 @@ int inserirPonto(tListaPonto *listaP, float xp, float yp, float zp){
     }
     return 1;
 }
+
+void mostrarFace(tListaFace listaF){
+    tFace *face;
+    int n = 1;
+    face = listaF.inicioFace;
+    while((n<=listaF.tamanhoFace)&&(face!=NULL)){
+        printf("Face %d: %d, %d, %d\n", n, face->pt[0], face->pt[1], face->pt[2]);
+        face = face->proxFace;
+        n++;
+    }
+}
 /**Fim da funções para manipular as listas */
 
 
 /**Função para ler as faces e colocar na lista de faces*/
-void lerFace(char *str){
+void lerFace(char *str, tListaFace *listaF){
     int i, qtdeentrou = 0, ent = 1, cont_aspas = 0;
+    int face[3];
+    //("%s", str);
     if(strstr(str, "coordIndex=\"")!=NULL){
-        //printf("entrou %d vezes\n", ++j);
+
         for(i = 0; i<strlen(str); i++){
+
             if(str[i]>='0' && str[i]<='9'){
                 if(qtdeentrou == 0){
-                    printf("#%d face: %c\n", ent, str[i]);
+                    face[qtdeentrou] = atoi(&str[i]);
+                    printf("#%d face: %d\n", ent, face[qtdeentrou]);
                     ent++;//serve de nada, só para numerar as faces
                     qtdeentrou++;
                 }else if(qtdeentrou == 1){
-                    printf("#%d face: %c\n", ent, str[i]);
+                    face[qtdeentrou] = atoi(&str[i]);
+                    printf("#%d face: %d\n", ent, face[qtdeentrou]);
                     ent++;//serve de nada, só para numerar as faces
                     qtdeentrou++;
                 }else if(qtdeentrou == 2){
-                    printf("#%d face: %c\n", ent, str[i]);
+                    face[qtdeentrou] = atoi(&str[i]);
+                    printf("#%d face: %d\n", ent, face[qtdeentrou]);
                     ent++;//serve de nada, só para numerar as faces
                     qtdeentrou++;
                 }
 
                 if(qtdeentrou==3){
+                    inserirFace(listaF, face[0], face[1], face[2]);
                     qtdeentrou = 0;
                     ent = 1;//serve de nada, só para numerar as faces
                 }
             }
+
             /**esse if é para verificar se foi lido as 3 faces e se foi, pular dois índices para não salvar o -1*/
             if(str[i] == '-'){
-                i = i+2;
+                i++;
             }
+
             /**if para verificar se já foi encontrado as duas aspas */
-            if(str[i] == '\"'){
+            if(str[i] == '"'){
                 cont_aspas++;
                 if(cont_aspas == 2){
+                    //printf("%d aspas\n", cont_aspas);
                     cont_aspas = 0;
                     break;
                 }
@@ -166,9 +187,9 @@ void lerFace(char *str){
 }//fim da função que pega os pontos
 
 /**Função para ler os pontos e colocar na lista de pontos */
-void lerPonto(char *str){
-    int i, qtdeentrou = 0, ent = 1, cont_aspas = 0;
-    float numero;
+void lerPonto(char *str, tListaPonto *listaP){
+    int i, qtdeentrou = 0, ent = 1, cont_aspas = 0, indice = 0;
+    float numero, ponto[3];
     char num[7];
     int numero_antes, numero_depois,flag_ponto = 1, cont=0, negativo = 0;;
     if(strstr(str, "point=\"")){
@@ -191,10 +212,19 @@ void lerPonto(char *str){
                             numero = numero_depois/1000000.0;
                             if(negativo){
                                 numero = -(numero + numero_antes);
+                                ponto[indice] = numero;
+                                //indice++;
                                 negativo = 0;
                             }else{
                                 numero = numero + numero_antes;
+                                ponto[indice] = numero;
+                                //indice++;
                             }
+                            if(indice == 2){
+                                inserirPonto(listaP, ponto[0], ponto[1], ponto[2]);
+                                indice = 0;
+                            }
+                            indice++;
                             printf("%f\n", numero);
                             cont = 0;
                             flag_ponto = 1;
@@ -215,19 +245,26 @@ void lerPonto(char *str){
     }//fim do if que compara a string
 }//fim da função de ler os pontos
 
-void lerArquivo(FILE *arquivo/*, tListaPonto *listaPonto, tListaFace *listaFace*/){
+void lerArquivo(FILE *arquivo, tListaPonto *listaPonto, tListaFace *listaFace){
     char linha[400];
+
     while(!feof(arquivo)){
         fgets(linha, 400, arquivo);
-        lerFace(linha);
-        lerPonto(linha);
+        //fscanf(arquivo, "%s", &linha);
+        lerFace(linha, listaFace);
+        lerPonto(linha, listaPonto);
     }//fim do arquivo
 }//fim da função ler arquivo
 
 int main(){
+    tListaFace faceEnc;
+    tListaPonto pontoEnc;
+    criarListaFace(&faceEnc);
+    criarListaPonto(&pontoEnc);
     FILE *f;
     f = fopen("quad.x3d", "r");
-    lerArquivo(f);
+    lerArquivo(f, &pontoEnc, &faceEnc);
     fclose(f);
+    mostrarFace(faceEnc);
     return 0;
 }
