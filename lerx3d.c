@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 /*leitura de um arquivo de modelo*/
 //tipos de dados
@@ -167,12 +168,50 @@ void lerFace(char *str){
 /**Função para ler os pontos e colocar na lista de pontos */
 void lerPonto(char *str){
     int i, qtdeentrou = 0, ent = 1, cont_aspas = 0;
+    float numero;
+    char num[7];
+    int numero_antes, numero_depois,flag_ponto = 1, cont=0, negativo = 0;;
     if(strstr(str, "point=\"")){
         for(i=0; i<strlen(str); i++){
-            if(str[i]>='0' && str[i]<='9'){
-
-            }
-        }
+                if((str[i]>='0'&&str[i]<='9')){
+                    if(flag_ponto){
+                        if(str[i-1] == '-'){
+                            negativo = 1;
+                            //numero_antes = atoi(&str[i]);
+                            //numero_antes = -numero_antes;
+                        }//else{
+                            numero_antes = atoi(&str[i]);
+                        //}
+                    }else{
+                        num[cont] = str[i];
+                        //printf("%c\n", num[cont]);
+                        cont++;
+                        if(cont == 6){
+                            numero_depois = atoi(num);
+                            numero = numero_depois/1000000.0;
+                            if(negativo){
+                                numero = -(numero + numero_antes);
+                                negativo = 0;
+                            }else{
+                                numero = numero + numero_antes;
+                            }
+                            printf("%f\n", numero);
+                            cont = 0;
+                            flag_ponto = 1;
+                        }
+                    }
+                }
+                if(str[i] == '.'){
+                    flag_ponto = 0;
+                }
+                if(str[i] == '\"'){
+                    cont_aspas++;
+                    if(cont_aspas == 2){
+                        cont_aspas = 0;
+                        break;
+                    }
+                }
+        }//fim do for
     }//fim do if que compara a string
 }//fim da função de ler os pontos
 
@@ -181,6 +220,7 @@ void lerArquivo(FILE *arquivo/*, tListaPonto *listaPonto, tListaFace *listaFace*
     while(!feof(arquivo)){
         fgets(linha, 400, arquivo);
         lerFace(linha);
+        lerPonto(linha);
     }//fim do arquivo
 }//fim da função ler arquivo
 
