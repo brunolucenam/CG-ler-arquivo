@@ -3,8 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 
-/*leitura de um arquivo de modelo*/
-//tipos de dados
+/**tipos de dados*/
 typedef struct face{
 	int pt[3];
 	struct face *proxFace;
@@ -17,8 +16,6 @@ typedef struct ponto{
 	struct ponto *proxPonto;
 }tPonto;
 
-//struct face *F=0;cabeça da lista
-//struct ponto *P=0;//cabeça da lista
 /**estruturas com um ponteiro para salvar o início ou cabeça das listas de ponto e face*/
 typedef struct listaFace{
     struct face *inicioFace;
@@ -30,28 +27,22 @@ typedef struct listaPonto{
     int tamanhoPonto;
 }tListaPonto;
 
-//protótipos de função
-//void inserePonto();
-//void insereFace();
-//void lerPonto();
-//void lerFace();
-void lerArquivo();
-//fim dos protótipos
 
 /**Funções para manipular as listas*/
-//Função para iniciar os valores da lista da face
+
+/**Função para iniciar os valores da lista da face*/
 void criarListaFace(tListaFace *listaF){
     listaF->inicioFace = NULL;
     listaF->tamanhoFace = 0;
 }
 
-//Função para iniciar os valores da lista do ponto
+/**Função para iniciar os valores da lista do ponto*/
 void criarListaPonto(tListaPonto *listaP){
     listaP->inicioPonto = NULL;
     listaP->tamanhoPonto = 0;
 }
 
-//Função para verificar se a lista de face está vazia
+/**Função para verificar se a lista de face está vazia*/
 int listaFaceVazia(tListaFace listaF){
     if(listaF.tamanhoFace == 0){
         return 1;
@@ -59,7 +50,7 @@ int listaFaceVazia(tListaFace listaF){
     return 0;
 }
 
-//Função para verificar se a lista de ponto está vazia
+/**Função para verificar se a lista de ponto está vazia*/
 int listaPontoVazia(tListaPonto listaP){
     if(listaP.tamanhoPonto == 0){
         return 1;
@@ -67,7 +58,7 @@ int listaPontoVazia(tListaPonto listaP){
     return 0;
 }
 
-//Função para inserir um elemento na lista da face, sempre no final. Função vai ser int para saber se foi inserido corretamente
+/**Função para inserir um elemento na lista da face, sempre no final. Função vai ser int para saber se foi inserido corretamente*/
 int inserirFace(tListaFace *listaF, int f1, int f2, int f3){
     tFace *noFace, *fimFace;
     fimFace = listaF->inicioFace;//esse ponteiro vai percorrer toda lista para inserir no fim
@@ -94,7 +85,7 @@ int inserirFace(tListaFace *listaF, int f1, int f2, int f3){
     return 1;
 }
 
-//Função para inserir um elemento na lista do ponto, sempre no final. Função vai ser int para saber se foi inserido corretamente
+/**Função para inserir um elemento na lista do ponto, sempre no final. Função vai ser int para saber se foi inserido corretamente*/
 int inserirPonto(tListaPonto *listaP, float xp, float yp, float zp){
     tPonto *noPonto, *fimPonto;
     fimPonto = listaP->inicioPonto;
@@ -119,18 +110,35 @@ int inserirPonto(tListaPonto *listaP, float xp, float yp, float zp){
     }
     return 1;
 }
+
+/**Função para liberar memória depois de mostrar na tela as faces*/
 int limparMemoriaFace(tListaFace *listaF){
     tFace *ponteiro;
-    int n = 0;
-    ponteiro = listaF->inicioFace;
-    if(listaFaceVazia(listaF)){
+    if(listaFaceVazia(*listaF)){
         return 0;
     }
-    while(n!=listaF->tamanhoFace){
+    while(listaF->inicioFace!=NULL){
+        ponteiro = listaF->inicioFace;
         listaF->inicioFace = ponteiro->proxFace;
         listaF->tamanhoFace--;
         free(ponteiro);
     }
+    return 1;
+}
+
+/**Função para liberar memória depois de mostrar na tela os pontos*/
+int limparMemoriaPonto(tListaPonto *listaP){
+    tPonto *ponteiro;
+    if(listaPontoVazia(*listaP)){
+        return 0;
+    }
+    while(listaP->inicioPonto!=NULL){
+        ponteiro = listaP->inicioPonto;
+        listaP->inicioPonto = ponteiro->proxPonto;
+        listaP->tamanhoPonto--;
+        free(ponteiro);
+    }
+    return 1;
 }
 
 void mostrarFace(tListaFace listaF){
@@ -159,25 +167,15 @@ void mostrarPonto(tListaPonto listaP){
 
 /**Função para ler as faces e colocar na lista de faces*/
 void lerFace(char *str, tListaFace *listaF){
-    int i, indice = 0, ent = 1, cont_aspas = 0;
+    int i, indice = 0, cont_aspas = 0;
     int face[3];
     if(strstr(str, "coordIndex=\"")!=NULL){
-
         for(i = 0; i<strlen(str); i++){
-
+            //if que verifica se o caracter é um número
             if(str[i]>='0' && str[i]<='9'){
-                if(indice == 0){
-                    face[indice] = atoi(&str[i]);
-                    indice++;
-                }else if(indice == 1){
-                    face[indice] = atoi(&str[i]);
-                    indice++;
-                }else if(indice == 2){
-                    face[indice] = atoi(&str[i]);
-                    indice++;
-                }
-
-                if(indice==3){
+                face[indice] = atoi(&str[i]);//pega o número como caracter e converte para int. Salva no array para depois colocar na lista
+                indice++;
+                if(indice==3){//entra nesse if quando encontrar os 3 números da face
                     inserirFace(listaF, face[0], face[1], face[2]);
                     indice = 0;
                 }
@@ -197,9 +195,9 @@ void lerFace(char *str, tListaFace *listaF){
                 }
             }
 
-        }//fim do for que encontra as faces
-    }//fim do if que procura as até achar o coordindex
-}//fim da função que pega os pontos
+        }
+    }
+}
 
 /**Função para ler os pontos e colocar na lista de pontos */
 void lerPonto(char *str, tListaPonto *listaP){
@@ -209,19 +207,20 @@ void lerPonto(char *str, tListaPonto *listaP){
     int numero_antes, numero_depois, flag_ponto = 1, cont=0, negativo = 0;;
     if(strstr(str, "point=\"")){
         for(i=0; i<strlen(str); i++){
+                /**if que verifica se o caracter é um número*/
                 if((str[i]>='0'&&str[i]<='9')){
-                    if(flag_ponto){
-                        if(str[i-1] == '-'){
+                    if(flag_ponto){//entra nesse if antes de encontrar o ponto
+                        if(str[i-1] == '-'){//if para verificar se o número é negativo
                             negativo = 1;
                         }
                         numero_antes = atoi(&str[i]);
                     }else{
-                        num[cont] = str[i];
+                        num[cont] = str[i];//depois do ponto vai salvar os 6 números depois do ponto como string
                         cont++;
-                        if(cont == 6){
-                            numero_depois = atoi(num);
-                            numero = numero_depois/1000000.0;
-                            if(negativo){
+                        if(cont == 6){//verifica se já foi encontrado os 6 números depois do ponto
+                            numero_depois = atoi(num);//converte os 6 números depois do ponto para int
+                            numero = numero_depois/1000000.0;//converte os 6 números em float
+                            if(negativo){//quando o número for negativo
                                 numero = -(numero + numero_antes);
                                 ponto[indice] = numero;
                                 negativo = 0;
@@ -230,7 +229,7 @@ void lerPonto(char *str, tListaPonto *listaP){
                                 ponto[indice] = numero;
                             }
                             indice++;
-                            if(indice == 3){
+                            if(indice == 3){//entra quando acha os pontos x, y e z
                                 inserirPonto(listaP, ponto[0], ponto[1], ponto[2]);
                                 indice = 0;
                             }
@@ -239,9 +238,11 @@ void lerPonto(char *str, tListaPonto *listaP){
                         }
                     }
                 }
+                /**if que verifica se já foi encontrado o ponto*/
                 if(str[i] == '.'){
                     flag_ponto = 0;
                 }
+                /**if para verificar se já foi encontrado as duas aspas*/
                 if(str[i] == '\"'){
                     cont_aspas++;
                     if(cont_aspas == 2){
@@ -249,30 +250,35 @@ void lerPonto(char *str, tListaPonto *listaP){
                         break;
                     }
                 }
-        }//fim do for
-    }//fim do if que compara a string
-}//fim da função de ler os pontos
+        }
+    }
+}
 
 void lerArquivo(FILE *arquivo, tListaPonto *listaPonto, tListaFace *listaFace){
     char linha[400];
-
     while(!feof(arquivo)){
         fgets(linha, 400, arquivo);
         lerFace(linha, listaFace);
         lerPonto(linha, listaPonto);
-    }//fim do arquivo
-}//fim da função ler arquivo
+    }
+}
 
 int main(){
     tListaFace faceEnc;
     tListaPonto pontoEnc;
-    criarListaFace(&faceEnc);
-    criarListaPonto(&pontoEnc);
+    criarListaFace(&faceEnc);//cria a lista de face setando null no inicio da face e 0 no tamanho
+    criarListaPonto(&pontoEnc);//cria a lista de ponto setando null no inicio do ponto e 0 no tamanho
     FILE *f;
     f = fopen("quad.x3d", "r");
-    lerArquivo(f, &pontoEnc, &faceEnc);
+    if(f == NULL){
+        printf("Nao foi possivel abrir o arquivo!\n");
+        return 0;
+    }
+    lerArquivo(f, &pontoEnc, &faceEnc);//começa a ler o arquivo
     fclose(f);
-    mostrarFace(faceEnc);
-    mostrarPonto(pontoEnc);
+    mostrarFace(faceEnc);//printa na tela todas as faces encontradas
+    mostrarPonto(pontoEnc);//printa na tela todas os pontos encontrados
+    limparMemoriaFace(&faceEnc);
+    limparMemoriaPonto(&pontoEnc);
     return 0;
 }
